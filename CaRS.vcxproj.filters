@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Arquivos de Recurso\Instancias">
+      <UniqueIdentifier>{42ef6d0f-a2af-4ce8-aabf-cc2837090863}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Arquivos de Recurso\Instancias\Pequenas">
+      <UniqueIdentifier>{63a54d75-7a34-4a7d-a9d8-64e1189b176c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Arquivos de Recurso\Instancias\Grandes">
+      <UniqueIdentifier>{eb121453-f4cf-4df1-8e40-13a8e1ee5414}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Arquivos de Recurso\Instancias\Medias">
+      <UniqueIdentifier>{ff5f59a0-a9f0-41e7-ae25-d2bf0164aa9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CaRS.cpp">
@@ -23,5 +35,30 @@
     <ClInclude Include="CaRS.h">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Pequenas\Mauritania10n.car">
+      <Filter>Arquivos de Recurso\Instancias\Pequenas</Filter>
+    </None>
+    <None Include="Pequenas\Bolivia10n.car">
+      <Filter>Arquivos de Recurso\Instancias\Pequenas</Filter>
+    </None>
+    <None Include="Medias\AfricaSul11n.car">
+      <Filter>Arquivos de Recurso\Instancias\Medias</Filter>
+    </None>
+    <None Include="Medias\Peru13n.car">
+      <Filter>Arquivos de Recurso\Instancias\Medias</Filter>
+    </None>
+    <None Include="Grandes\Brasil16n.car">
+      <Filter>Arquivos de Recurso\Instancias\Grandes</Filter>
+    </None>
+    <None Include="Grandes\Russia17n.car">
+      <Filter>Arquivos de Recurso\Instancias\Grandes</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Pequenas\Teste.txt">
+      <Filter>Arquivos de Recurso\Instancias\Pequenas</Filter>
+    </Text>
   </ItemGroup>
 </Project>

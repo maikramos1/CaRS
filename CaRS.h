@@ -9,8 +9,8 @@
 char nomeInstancia[MAX_NOME];
 int num_cidades;
 int num_carros;
-int mat_distancia[MAX_CID][MAX_CID];
-int mat_retorno[MAX_CID][MAX_CID];
+int mat_distancia[MAX_CAR][MAX_CID][MAX_CID];
+int mat_retorno[MAX_CAR][MAX_CID][MAX_CID];
 
 void leArquivoNaoEuclideano(const char* caminho);
 void imprimeArquivoNaoEuclideano();
