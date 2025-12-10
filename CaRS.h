@@ -13,6 +13,6 @@ int mat_distancia[MAX_CAR][MAX_CID][MAX_CID];
 int mat_retorno[MAX_CAR][MAX_CID][MAX_CID];
 
 void leArquivoNaoEuclideano(const char* caminho);
-void imprimeArquivoNaoEuclideano();
+void imprimeArquivoNaoEuclideano(const char * arq);
 
 #endif // cabecalho

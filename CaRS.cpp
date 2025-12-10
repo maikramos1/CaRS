@@ -1,12 +1,13 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <string.h>
 #include "CaRS.h"
 
 
 int main(void) {
 
 	leArquivoNaoEuclideano("Pequenas/Teste.txt");
-	//imprimeArquivoNaoEuclideano();
+	imprimeArquivoNaoEuclideano(" ");
 
 
 
@@ -68,32 +69,40 @@ void leArquivoNaoEuclideano(const char* caminho) {
 	fclose(f);
 }
 
-void imprimeArquivoNaoEuclideano() {
-	printf("Nome da Instancia: %s\n", nomeInstancia);
-	printf("Numero de Cidades: %d\n", num_cidades);
-	printf("Numero de Carros: %d\n", num_carros);
-	printf("Matriz de Distancias:\n");
+void imprimeArquivoNaoEuclideano(const char* arq) {
+	FILE* f;
+	if (!strcmp(arq, " ")) f = stdout;
+	else f = fopen(arq, "w");
+	
+	fprintf(f,"Nome da Instancia: %s\n", nomeInstancia);
+	fprintf(f,"Numero de Cidades: %d\n", num_cidades);
+	fprintf(f,"Numero de Carros: %d\n", num_carros);
+	fprintf(f,"Matriz de Distancias:\n");
 
 	for (int i = 0; i < num_carros; i++) {
-		printf("Carro %d:\n", i);
+		fprintf(f,"Carro %d:\n", i);
 		for (int j = 0; j < num_cidades; j++) {
 			for (int k = 0; k < num_cidades; k++) {
-				printf("%3d ", mat_distancia[i][j][k]);
+				fprintf(f,"%3d ", mat_distancia[i][j][k]);
 			}
-			printf("\n");
+			fprintf(f,"\n");
 		}
-		printf("\n");
+		fprintf(f,"\n");
 	}
 
-	printf("Matriz de Retornos:\n");
+	fprintf(f,"Matriz de Retornos:\n");
 	for (int i = 0; i < num_carros; i++) {
-		printf("Carro %d:\n", i);
+		fprintf(f,"Carro %d:\n", i);
 		for (int j = 0; j < num_cidades; j++) {
 			for (int k = 0; k < num_cidades; k++) {
-				printf("%3d ", mat_retorno[i][j][k]);
+				fprintf(f,"%3d ", mat_retorno[i][j][k]);
 			}
-			printf("\n");
+			fprintf(f,"\n");
 		}
-		printf("\n");
+		fprintf(f,"\n");
 	}
+	
+	if (strcmp(arq, " "))
+		fclose(f);
+
 }
