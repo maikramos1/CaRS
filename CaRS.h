@@ -14,5 +14,6 @@ int mat_retorno[MAX_CAR][MAX_CID][MAX_CID];
 
 void leArquivoNaoEuclideano(const char* caminho);
 void imprimeArquivoNaoEuclideano(const char * arq);
+void escreveCEPLEX(const char* arq);
 
 #endif // cabecalho

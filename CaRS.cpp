@@ -6,18 +6,28 @@
 
 int main(void) {
 	
+	const char* instancia[] = {
+		//Instâncias Não-Euclideanas:
+		//Pequenas
+		"Pequenas/Mauritania10n.car",
+		"Pequenas/Bolivia10n.car",
+		//Médias
+		"Medias/AfricaSul11n.car",
+		"Medias/Peru13n.car",
+		//Grandes
+		"Grandes/Brasil16n.car",
+		"Grandes/Russia17n.car"
+	};
+
 	
-	//Instâncias Não-Euclideanas:
-	leArquivoNaoEuclideano("Pequenas/Mauritania10n.car");
-	//leArquivoNaoEuclideano("Pequenas/Bolivia10n.car");
+	leArquivoNaoEuclideano(instancia[0]);
+	
+	escreveCEPLEX(" ");
 
-	//leArquivoNaoEuclideano("Medias/AfricaSul11n.car");
-	//leArquivoNaoEuclideano("Medias/Peru13n.car");
+	//imprimeArquivoNaoEuclideano(" ");
 
-	//leArquivoNaoEuclideano("Grandes/Brasil16n.car");
-	//leArquivoNaoEuclideano("Grandes/Russia17n.car");
+	
 
-	imprimeArquivoNaoEuclideano(" ");
 
 
 
@@ -115,4 +125,27 @@ void imprimeArquivoNaoEuclideano(const char* arq) {
 	if (strcmp(arq, " "))
 		fclose(f);
 
+}
+
+void escreveCEPLEX(const char* arq) {
+	// A implementar
+	FILE* f;
+	if (!strcmp(arq, " ")) f = stdout;
+	else f = fopen(arq, "w");
+
+	fprintf(f, "Min \n");
+	for (int c = 0; c < num_carros; c++) {
+		fprintf(f, " + ");
+		for (int i = 0; i < num_cidades; i++) {
+			for (int j = 0; j < num_cidades; j++) {
+				//trocando a ordem de D e F pra ficar igual no slide
+				fprintf(f, "%d f_%d_%d_%d", mat_distancia[c][i][j], c, i, j);
+			}
+		}
+	}
+
+
+
+	if (strcmp(arq, " "))
+		fclose(f);
 }
