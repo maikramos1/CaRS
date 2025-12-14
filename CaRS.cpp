@@ -133,7 +133,7 @@ void escreveCEPLEX(const char* arq) {
 	if (!strcmp(arq, " ")) f = stdout;
 	else f = fopen(arq, "w");
 
-	//FO
+	//FO -> 1ª Equação
 	fprintf(f, "Min \n");
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
@@ -167,7 +167,7 @@ void escreveCEPLEX(const char* arq) {
 	//Subject To
 	fprintf(f, "\nST\n");
 
-	//1ª Restrição
+	//2ª Restrição
 	for (int i = 0; i < num_cidades; i++) {
 		for (int c = 0; c < num_carros; c++) {
 			for (int j = 0; j < num_cidades; j++) {
@@ -182,7 +182,7 @@ void escreveCEPLEX(const char* arq) {
 		fprintf(f,"= 1\n");
 	}
 
-	//2ª Restrição
+	//3ª Restrição
 	for (int j = 0; j < num_cidades; j++) {
 		for (int c = 0; c < num_carros; c++) {
 			for (int i = 0; i < num_cidades; i++) {
@@ -197,13 +197,138 @@ void escreveCEPLEX(const char* arq) {
 		fprintf(f, "= 1\n");
 	}
 
-	//3ª Restrição
-	//linearizando 
+	//4ª Restrição
+	//linearizando e substituindo por 4.1, 4.2 e 4.3 (f c i j já é binária)
+	//4.1ª Restrição
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
-
+			fprintf(f, "a_%d_%d", c,i);
+			for (int j = 0; j < num_cidades; j++) {
+				fprintf(f, " - f_%d_%d_%d", c, i, j);
+			}
+			fprintf(f, " <= 0\n");
 		}
 	}
+
+	//4.2ª Restrição
+	for (int c = 0; c < num_carros; c++) {
+		for (int i = 0; i < num_cidades; i++) {
+			fprintf(f, "a_%d_%d", c, i);
+			for (int x = 0; x < num_carros; x++) {
+				if (x != c) {
+					for (int h = 0; h < num_cidades; h++) {
+						fprintf(f, " - f_%d_%d_%d", x, h, i);
+					}
+				}
+			}
+			fprintf(f, " <= 0\n");
+		}
+	}
+
+	//4.3ª Restrição
+	for (int c = 0; c < num_carros; c++) {
+		for (int i = 0; i < num_cidades; i++) {
+			fprintf(f, "a_%d_%d", c, i);
+			for (int j = 0; j < num_cidades; j++) {
+				fprintf(f, " - f_%d_%d_%d", c, i, j);
+			}
+			for (int x = 0; x < num_carros; x++) {
+				if (x != c) {
+					for (int h = 0; h < num_cidades; h++) {
+						fprintf(f, " - f_%d_%d_%d", x, h, i);
+					}
+				}
+			}
+			fprintf(f, " >= -1\n");
+		}
+	}
+
+	//5ª Restrição
+	//linearizando e substituindo por 5.1, 5.2 e 5.3 (f c i j já é binária)
+	//5.1ª Restrição
+	for (int c = 0; c < num_carros; c++) {
+		for (int i = 0; i < num_cidades; i++) {
+			fprintf(f, "e_%d_%d", c, i);
+			for (int j = 0; j < num_cidades; j++) {
+				fprintf(f, " - f_%d_%d_%d", c, j, i);
+			}
+			fprintf(f, " <= 0\n");
+		}
+	}
+
+	//5.2ª Restrição
+	for (int c = 0; c < num_carros; c++) {
+		for (int i = 0; i < num_cidades; i++) {
+			fprintf(f, "e_%d_%d", c, i);
+			for (int x = 0; x < num_carros; x++) {
+				if (x != c) {
+					for (int h = 0; h < num_cidades; h++) {
+						fprintf(f, " - f_%d_%d_%d", x, i, h);
+					}
+				}
+			}
+			fprintf(f, " <= 0\n");
+		}
+	}
+
+	//5.3ª Restrição
+	for (int c = 0; c < num_carros; c++) {
+		for (int i = 0; i < num_cidades; i++) {
+			fprintf(f, "e_%d_%d", c, i);
+			for (int j = 0; j < num_cidades; j++) {
+				fprintf(f, " - f_%d_%d_%d", c, j, i);
+			}
+			for (int x = 0; x < num_carros; x++) {
+				if (x != c) {
+					for (int h = 0; h < num_cidades; h++) {
+						fprintf(f, " - f_%d_%d_%d", x, i, h);
+					}
+				}
+			}
+			fprintf(f, " >= -1\n");
+		}
+	}
+
+	//6ª Restrição
+	//linearizando e substituindo por 6.1, 6.2, 6.3 e adicionada no final w(c i j) como binária
+	//6.1ª Restrição
+	for (int c = 0; c < num_carros; c++) {
+		for (int i = 0; i < num_cidades; i++) {
+			//verificar a relação de j em w de acordo com o artigo
+			for (int j = 0; j < num_cidades; j++) {
+				fprintf(f, "w_%d_%d_%d - a_%d_%d <= 0\n", c, i, j, c, j);
+			}
+			
+		}
+	}
+
+	//6.2ª Restrição
+	for (int c = 0; c < num_carros; c++) {
+		for (int i = 0; i < num_cidades; i++) {
+			for (int j = 0; j < num_cidades; j++) {
+				fprintf(f, "w_%d_%d_%d - e_%d_%d <= 0\n", c, i, j, c, i);
+			}
+		}
+	}
+
+	//6.3ª Restrição
+	for(int c = 0; c < num_carros; c++) {
+		for (int i = 0; i < num_cidades; i++) {
+			for (int j = 0; j < num_cidades; j++) {
+				fprintf(f, "w_%d_%d_%d - a_%d_%d - e_%d_%d >= -1\n", c, i, j, c, j, c, i);
+			}
+		}
+	}
+
+	//7ª Restrição
+	for(int c = 0; c < num_carros; c++) {
+		for (int i = 0; i < num_cidades; i++) {
+			if (c == i && c == 0)	fprintf(f, "a_%d_%d",c,i);
+			else fprintf(f, " + a_%d_%d",c,i);
+		}
+	}
+	fprintf(f, " >= 1\n");
+	
 
 
 	if (strcmp(arq, " "))
