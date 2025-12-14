@@ -133,16 +133,24 @@ void escreveCEPLEX(const char* arq) {
 	if (!strcmp(arq, " ")) f = stdout;
 	else f = fopen(arq, "w");
 
+	//FO
 	fprintf(f, "Min \n");
 	for (int c = 0; c < num_carros; c++) {
-		fprintf(f, " + ");
 		for (int i = 0; i < num_cidades; i++) {
 			for (int j = 0; j < num_cidades; j++) {
 				//trocando a ordem de D e F pra ficar igual no slide
-				fprintf(f, "%d f_%d_%d_%d", mat_distancia[c][i][j], c, i, j);
+				if (c == 0 && i == 0 && j == 0) {
+					fprintf(f, "%d x_%d_%d_%d ", mat_distancia[c][i][j], c, i, j);
+				}
+				else {
+					fprintf(f, "+ %d x_%d_%d_%d ", mat_distancia[c][i][j], c, i, j);
+				}
+				
 			}
 		}
 	}
+	fprintf(f,"+ ")
+
 
 
 
