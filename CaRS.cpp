@@ -5,8 +5,18 @@
 
 
 int main(void) {
+	
+	
+	//Instâncias Não-Euclideanas:
+	leArquivoNaoEuclideano("Pequenas/Mauritania10n.car");
+	//leArquivoNaoEuclideano("Pequenas/Bolivia10n.car");
 
-	leArquivoNaoEuclideano("Pequenas/Teste.txt");
+	//leArquivoNaoEuclideano("Medias/AfricaSul11n.car");
+	//leArquivoNaoEuclideano("Medias/Peru13n.car");
+
+	//leArquivoNaoEuclideano("Grandes/Brasil16n.car");
+	//leArquivoNaoEuclideano("Grandes/Russia17n.car");
+
 	imprimeArquivoNaoEuclideano(" ");
 
 
