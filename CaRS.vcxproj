@@ -135,11 +135,18 @@ ilocplex.lib;%(AdditionalDependencies)</AdditionalDependencies>
   </ItemGroup>
   <ItemGroup>
     <None Include="Grandes\Brasil16n.car" />
+    <None Include="Grandes\Brasil16n.lp" />
     <None Include="Grandes\Russia17n.car" />
+    <None Include="Grandes\Russia17n.lp" />
     <None Include="Medias\AfricaSul11n.car" />
+    <None Include="Medias\AfricaSul11n.lp" />
     <None Include="Medias\Peru13n.car" />
+    <None Include="Medias\Peru13n.lp" />
     <None Include="Pequenas\Bolivia10n.car" />
+    <None Include="Pequenas\Bolivia10n.lp" />
     <None Include="Pequenas\Mauritania10n.car" />
+    <None Include="Pequenas\Mauritania10n.lp" />
+    <None Include="resultados_obtidos.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

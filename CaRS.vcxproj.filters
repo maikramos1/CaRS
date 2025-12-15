@@ -55,5 +55,12 @@
     <None Include="Grandes\Russia17n.car">
       <Filter>Arquivos de Recurso\Instancias\Grandes</Filter>
     </None>
+    <None Include="Grandes\Brasil16n.lp" />
+    <None Include="Grandes\Russia17n.lp" />
+    <None Include="Medias\AfricaSul11n.lp" />
+    <None Include="Medias\Peru13n.lp" />
+    <None Include="Pequenas\Bolivia10n.lp" />
+    <None Include="Pequenas\Mauritania10n.lp" />
+    <None Include="resultados_obtidos.csv" />
   </ItemGroup>
 </Project>
