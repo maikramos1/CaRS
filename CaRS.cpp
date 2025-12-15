@@ -167,7 +167,7 @@ void escreveCEPLEX(const char* arq) {
 			for (int j = 0; j < num_cidades; j++) {
 				//entende-se y = gamma = taxa de retorno
 				if (i != j) {
-					fprintf(f, "+ %3d y_%d_%d_%d ", mat_retorno[c][i][j], c, i, j);
+					fprintf(f, "+ %d w_%d_%d_%d ", mat_retorno[c][i][j], c, i, j);
 				}
 			}
 		}
@@ -383,6 +383,7 @@ void escreveCEPLEX(const char* arq) {
 	//teste da entrega somente em cidades impares (excluindo cidades pares)
 	//cidade 2 = indice 1
 	//cidade 4 = indice 3
+	/*
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
 			if (i % 2 != 0) { //cidade indice par
@@ -390,7 +391,7 @@ void escreveCEPLEX(const char* arq) {
 			}
 		}
 	}
-	
+	*/
 	//Antes da 10ª Restrição, declaro o bounds
 	fprintf(f, "Bounds\n");
 	//fprintf(f, "u_0 = 1\n");
