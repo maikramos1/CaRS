@@ -33,14 +33,14 @@ int main(void) {
 	//int instancia = 1;
 
 	
-	leArquivoNaoEuclideano("Pequenas/Mauritania10n.car");
+	leArquivoNaoEuclideano("Grandes/Russia17n.car");
 	
-	escreveCEPLEX("Pequenas/Mauritania10n.lp");
+	escreveCEPLEX("Grandes/Russia17n.lp");
 	//escreveCEPLEX(" ");
 	
-	const char* modelo = "Pequenas/Mauritania10n.lp";
-	const char* inst = "Mauritania10n";
-	const char* arq_solucao = "Mauritania10n.txt";
+	const char* modelo = "Grandes/Russia17n.lp";
+	const char* inst = "Russia17n";
+	const char* arq_solucao = "Russia17n.txt";
 	const char* arq_res_obtidos = "resultados_obtidos.csv";
 	optimize_cplex(modelo, inst, arq_solucao, arq_res_obtidos);
 
@@ -156,7 +156,7 @@ void escreveCEPLEX(const char* arq) {
 			for (int j = 0; j < num_cidades; j++) {
 				//trocando a ordem de D e F pra ficar igual no slide
 				if (i != j){
-					fprintf(f, "+ %d f_%d_%d_%d ", mat_distancia[c][i][j], c, i, j);
+					fprintf(f, "+ %3d f_%d_%d_%d ", mat_distancia[c][i][j], c, i, j);
 				}
 			}
 		}
@@ -167,7 +167,7 @@ void escreveCEPLEX(const char* arq) {
 			for (int j = 0; j < num_cidades; j++) {
 				//entende-se y = gamma = taxa de retorno
 				if (i != j) {
-					fprintf(f, "+ %d w_%d_%d_%d ", mat_retorno[c][i][j], c, i, j);
+					fprintf(f, "+ %3d w_%d_%d_%d ", mat_retorno[c][i][j], c, i, j);
 				}
 			}
 		}
@@ -483,8 +483,8 @@ void optimize_cplex(const char* modelo, const char* instancia, const char* arq_s
 	sts = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_ON);
 	status_cplex(env, sts, "CPXsetintparam(SCRIND)");
 
-	sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600.0);
-	//sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 30.0);
+	//sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600.0);
+	sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 30.0);
 	status_cplex(env, sts, "CPXsetdblparam(TILIM)");
 
 	lp = CPXcreateprob(env, &sts, "meu_problema_lp");
