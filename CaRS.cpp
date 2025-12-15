@@ -6,7 +6,7 @@
 
 int main(void) {
 	
-	const char* instancia[] = {
+	const char* entrada[] = {
 		//Instâncias Não-Euclideanas:
 		//Pequenas
 		"Pequenas/Mauritania10n.car",
@@ -18,11 +18,24 @@ int main(void) {
 		"Grandes/Brasil16n.car",
 		"Grandes/Russia17n.car"
 	};
+	const char* saida[] = {
+		//Instâncias Não-Euclideanas:
+		//Pequenas
+		"Pequenas/Mauritania10n.lp",
+		"Pequenas/Bolivia10n.lp",
+		//Médias
+		"Medias/AfricaSul11n.lp",
+		"Medias/Peru13n.lp",
+		//Grandes
+		"Grandes/Brasil16n.lp",
+		"Grandes/Russia17n.lp"
+	};
+	int instancia = 0;
 
 	
-	leArquivoNaoEuclideano(instancia[0]);
+	leArquivoNaoEuclideano(entrada[instancia]);
 	
-	escreveCEPLEX(" ");
+	escreveCEPLEX(saida[instancia]);
 
 	//imprimeArquivoNaoEuclideano(" ");
 
@@ -329,6 +342,8 @@ void escreveCEPLEX(const char* arq) {
 	}
 	fprintf(f, " >= 1\n");
 	
+	//8ª Restrição
+	//for (int i = 2; i < n)
 
 
 	if (strcmp(arq, " "))
