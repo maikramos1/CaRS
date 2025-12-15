@@ -2,7 +2,9 @@
 #ifndef cabecalho
 #define cabecalho
 
-#include "C:\Program Files\IBM\ILOG\CPLEX_Studio_Community2212\opl\include\ilcplex\cplex.h"
+//#include "C:\Program Files\IBM\ILOG\CPLEX_Studio_Community2212\opl\include\ilcplex\cplex.h"
+#include "C:\Program Files\IBM\ILOG\CPLEX_Studio2211\opl\include\ilcplex\cplex.h"
+
 
 #define MAX_CID 20
 #define MAX_CAR	10
@@ -20,5 +22,7 @@ void escreveCEPLEX(const char* arq);
 
 void optimize_cplex(const char* modelo, const char* instancia, const char* arq_solucao, const char* arq_res_obtidos);
 void status_cplex(CPXENVptr env, int sts, const char* function_name);
+
+void escreve_solucao(const char* arq_solucao, double valor_obj, int num_vars, double* var_values, char** var_names);
 
 #endif // cabecalho

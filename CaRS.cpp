@@ -16,7 +16,7 @@ int main(void) {
 		"Medias/Peru13n.car",
 		//Grandes
 		"Grandes/Brasil16n.car",
-		"Grandes/Russia17n.car"
+		"Grandes/	.car"
 	};
 	const char* saida[] = {
 		//Instâncias Não-Euclideanas:
@@ -30,17 +30,17 @@ int main(void) {
 		"Grandes/Brasil16n.lp",
 		"Grandes/Russia17n.lp"
 	};
-	int instancia = 0;
+	//int instancia = 1;
 
 	
-	leArquivoNaoEuclideano(entrada[instancia]);
+	leArquivoNaoEuclideano("Pequenas/Mauritania10n.car");
 	
-	escreveCEPLEX(saida[instancia]);
+	escreveCEPLEX("Pequenas/Mauritania10n.lp");
 	//escreveCEPLEX(" ");
 	
 	const char* modelo = "Pequenas/Mauritania10n.lp";
-	const char* inst = "teste";
-	const char* arq_solucao = "teste.txt";
+	const char* inst = "Mauritania10n";
+	const char* arq_solucao = "Mauritania10n.txt";
 	const char* arq_res_obtidos = "resultados_obtidos.csv";
 	optimize_cplex(modelo, inst, arq_solucao, arq_res_obtidos);
 
@@ -482,8 +482,8 @@ void optimize_cplex(const char* modelo, const char* instancia, const char* arq_s
 	sts = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_ON);
 	status_cplex(env, sts, "CPXsetintparam(SCRIND)");
 
-	//sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600.0);
-	sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 30.0);
+	sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600.0);
+	//sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 30.0);
 	status_cplex(env, sts, "CPXsetdblparam(TILIM)");
 
 	lp = CPXcreateprob(env, &sts, "meu_problema_lp");
@@ -567,4 +567,74 @@ void status_cplex(CPXENVptr env, int sts, const char* function_name) {
 
 		exit(1);
 	}
+}
+
+//protótipo de escrita de solução
+void escreve_solucao(const char* arq_solucao, double valor_obj, int num_vars, double* var_values, char** var_names) {
+	FILE* f;
+	if (!strcmp(arq_solucao, " ")) f = stdout;
+	else f = fopen(arq_solucao, "w");
+	
+	fprintf(f, "==============================\n");
+	fprintf(f, "  SOLUCAO DO PROBLEMA CaRS\n");
+	fprintf(f, "==============================\n\n");
+	fprintf(f, "Valor da Funcao Objetivo: %.2f\n\n", valor_obj);
+
+	/* -------------------------------
+	   Arcos percorridos (f_c_i_j)
+	   ------------------------------- */
+	fprintf(f, "Arcos percorridos por carro:\n");
+	for (int i = 0; i < num_vars; i++) {
+		if (var_values[i] > 0.5 && strncmp(var_names[i], "f_", 2) == 0) {
+			int c, u, v;
+			sscanf(var_names[i], "f_%d_%d_%d", &c, &u, &v);
+			fprintf(f, "  Carro %d: %d -> %d\n", c, u, v);
+		}
+	}
+
+	/* -------------------------------
+	   Aluguel de carros (a_c_i)
+	   ------------------------------- */
+	fprintf(f, "\nCidades onde cada carro eh alugado:\n");
+	for (int i = 0; i < num_vars; i++) {
+		if (var_values[i] > 0.5 && strncmp(var_names[i], "a_", 2) == 0) {
+			int c, city;
+			sscanf(var_names[i], "a_%d_%d", &c, &city);
+			fprintf(f, "  Carro %d alugado na cidade %d\n", c, city);
+		}
+	}
+
+	/* -------------------------------
+	   Devolucao de carros (e_c_i)
+	   ------------------------------- */
+	fprintf(f, "\nCidades onde cada carro eh devolvido:\n");
+	for (int i = 0; i < num_vars; i++) {
+		if (var_values[i] > 0.5 && strncmp(var_names[i], "e_", 2) == 0) {
+			int c, city;
+			sscanf(var_names[i], "e_%d_%d", &c, &city);
+			fprintf(f, "  Carro %d devolvido na cidade %d\n", c, city);
+		}
+	}
+
+	/* -------------------------------
+	   Pares aluguel–devolucao (w_c_i_j)
+	   ------------------------------- */
+	fprintf(f, "\nPares aluguel–devolucao:\n");
+	for (int i = 0; i < num_vars; i++) {
+		if (var_values[i] > 0.5 && strncmp(var_names[i], "w_", 2) == 0) {
+			int c, aluguel, devolucao;
+			sscanf(var_names[i], "w_%d_%d_%d", &c, &aluguel, &devolucao);
+			fprintf(f,
+				"  Carro %d: alugado em %d e devolvido em %d\n",
+				c, aluguel, devolucao
+			);
+		}
+	}
+
+	fprintf(f, "\n==============================\n");
+
+	if (strcmp(arq_solucao, " "))
+		fclose(f);
+
+	fclose(f);
 }
