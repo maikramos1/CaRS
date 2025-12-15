@@ -33,14 +33,14 @@ int main(void) {
 	//int instancia = 1;
 
 	
-	leArquivoNaoEuclideano("Grandes/Russia17n.car");
+	leArquivoNaoEuclideano("Pequenas/Mauritania10n.car");
 	
-	escreveCEPLEX("Grandes/Russia17n.lp");
+	escreveCEPLEX("Pequenas/Mauritania10n.lp");
 	//escreveCEPLEX(" ");
 	
-	const char* modelo = "Grandes/Russia17n.lp";
-	const char* inst = "Russia17n";
-	const char* arq_solucao = "Russia17n.txt";
+	const char* modelo = "Pequenas/Mauritania10n.lp";
+	const char* inst = "Mauritania10n";
+	const char* arq_solucao = "Mauritania10n.txt";
 	const char* arq_res_obtidos = "resultados_obtidos.csv";
 	optimize_cplex(modelo, inst, arq_solucao, arq_res_obtidos);
 
@@ -156,7 +156,7 @@ void escreveCEPLEX(const char* arq) {
 			for (int j = 0; j < num_cidades; j++) {
 				//trocando a ordem de D e F pra ficar igual no slide
 				if (i != j){
-					fprintf(f, "+ %3d f_%d_%d_%d ", mat_distancia[c][i][j], c, i, j);
+					fprintf(f, "+ %d f_%d_%d_%d ", mat_distancia[c][i][j], c, i, j);
 				}
 			}
 		}
@@ -167,7 +167,7 @@ void escreveCEPLEX(const char* arq) {
 			for (int j = 0; j < num_cidades; j++) {
 				//entende-se y = gamma = taxa de retorno
 				if (i != j) {
-					fprintf(f, "+ %3d w_%d_%d_%d ", mat_retorno[c][i][j], c, i, j);
+					fprintf(f, "+ %d w_%d_%d_%d ", mat_retorno[c][i][j], c, i, j);
 				}
 			}
 		}
@@ -199,8 +199,7 @@ void escreveCEPLEX(const char* arq) {
 		}
 		fprintf(f, "= 1\n");
 	}
-	
-	
+
 	//4ª Restrição
 	//linearizando e substituindo por 4.1, 4.2 e 4.3 (f c i j já é binária)
 	//4.1ª Restrição
@@ -221,18 +220,18 @@ void escreveCEPLEX(const char* arq) {
 		for (int i = 0; i < num_cidades; i++) {
 			fprintf(f, "+ a_%d_%d", c, i);
 			for (int x = 0; x < num_carros; x++) {
-				if (x != c) {
+				//if (x != c) {
 					for (int h = 0; h < num_cidades; h++) {
-						if (i != h) {
+						if (i != h && x != c) {
 							fprintf(f, " - f_%d_%d_%d", x, h, i);
 						}
 					}
-				}
+				//}
 			}
 			fprintf(f, " <= 0\n");
 		}
 	}
-	
+
 	//4.3ª Restrição
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
@@ -242,14 +241,15 @@ void escreveCEPLEX(const char* arq) {
 					fprintf(f, " - f_%d_%d_%d", c, i, j);
 				}
 			}
+			
 			for (int x = 0; x < num_carros; x++) {
-				if (x != c) {
+				//if (x != c) {
 					for (int h = 0; h < num_cidades; h++) {
-						if (i != h){
+						if (i != h && x != c){
 						fprintf(f, " - f_%d_%d_%d", x, h, i);
 						}
 					}
-				}
+				//}
 			}
 			fprintf(f, " >= -1\n");
 		}
@@ -275,18 +275,18 @@ void escreveCEPLEX(const char* arq) {
 		for (int i = 0; i < num_cidades; i++) {
 			fprintf(f, "+ e_%d_%d", c, i);
 			for (int x = 0; x < num_carros; x++) {
-				if (x != c) {
+				//if (x != c) {
 					for (int h = 0; h < num_cidades; h++) {
-						if (i != h) {
+						if (i != h && x != c) {
 							fprintf(f, " - f_%d_%d_%d", x, i, h);
 						}
 					}
-				}
+				//}
 			}
 			fprintf(f, " <= 0\n");
 		}
 	}
-
+	
 	//5.3ª Restrição
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
@@ -297,18 +297,18 @@ void escreveCEPLEX(const char* arq) {
 				}
 			}
 			for (int x = 0; x < num_carros; x++) {
-				if (x != c) {
+				//if (x != c) {
 					for (int h = 0; h < num_cidades; h++) {
-						if (h != i)  {
+						if (h != i && x != c)  {
 							fprintf(f, " - f_%d_%d_%d", x, i, h);
 						}
 					}
-				}
+				//}
 			}
 			fprintf(f, " >= -1\n");
 		}
 	}
-
+	
 	//6ª Restrição
 	//linearizando e substituindo por 6.1, 6.2, 6.3 e adicionada no final w(c i j) como binária
 	//6.1ª Restrição
@@ -363,7 +363,7 @@ void escreveCEPLEX(const char* arq) {
 
 	//8.2ª Restrição
 	for (int i = 1; i < num_cidades; i++) {
-		fprintf(f, "u_%d <= %d\n", i, num_cidades - 1);
+		fprintf(f, "u_%d <= %d\n", i, num_cidades);
 	}
 
 	//9ª Restrição
@@ -373,9 +373,11 @@ void escreveCEPLEX(const char* arq) {
 			if (i != j) {
 				fprintf(f, "u_%d - u_%d", i, j);
 				for (int c = 0; c < num_carros; c++) {
-					fprintf(f, " + %d f_%d_%d_%d", num_cidades - 2, c, i, j);
+					if (i != j) {
+						fprintf(f, " + %d f_%d_%d_%d", num_cidades - 1, c, i, j);
+					}
 				}
-				fprintf(f, " <= %d\n", num_cidades - 3);
+				fprintf(f, " <= %d\n", num_cidades - 2);
 			}
 		}
 	}
@@ -383,7 +385,6 @@ void escreveCEPLEX(const char* arq) {
 	//teste da entrega somente em cidades impares (excluindo cidades pares)
 	//cidade 2 = indice 1
 	//cidade 4 = indice 3
-	/*
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
 			if (i % 2 != 0) { //cidade indice par
@@ -391,12 +392,12 @@ void escreveCEPLEX(const char* arq) {
 			}
 		}
 	}
-	*/
+	
 	//Antes da 10ª Restrição, declaro o bounds
 	fprintf(f, "Bounds\n");
 	//fprintf(f, "u_0 = 1\n");
 	for (int i = 1; i < num_cidades; i++) {
-		fprintf(f, "u_%d >= 2\n", i);
+		fprintf(f, "2 <= u_%d <= %d\n", i, num_cidades);
 	}
 	
 	//10ª Restrição
@@ -636,6 +637,4 @@ void escreve_solucao(const char* arq_solucao, double valor_obj, int num_vars, do
 
 	if (strcmp(arq_solucao, " "))
 		fclose(f);
-
-	fclose(f);
 }
