@@ -19,6 +19,6 @@ void imprimeArquivoNaoEuclideano(const char * arq);
 void escreveCEPLEX(const char* arq);
 
 void optimize_cplex(const char* modelo, const char* instancia, const char* arq_solucao, const char* arq_res_obtidos);
-void check_status_cplex(CPXENVptr env, int sts, const char* function_name);
+void status_cplex(CPXENVptr env, int sts, const char* function_name);
 
 #endif // cabecalho

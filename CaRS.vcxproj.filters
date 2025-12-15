@@ -56,9 +56,4 @@
       <Filter>Arquivos de Recurso\Instancias\Grandes</Filter>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="Pequenas\Teste.txt">
-      <Filter>Arquivos de Recurso\Instancias\Pequenas</Filter>
-    </Text>
-  </ItemGroup>
 </Project>

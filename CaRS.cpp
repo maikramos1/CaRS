@@ -35,22 +35,18 @@ int main(void) {
 	
 	leArquivoNaoEuclideano(entrada[instancia]);
 	
-	//escreveCEPLEX(saida[instancia]);
-	escreveCEPLEX(" ");
-
-	//const char* modelo = "Pequenas/Mauritania10n.lp";
-	//const char* instancia2 = "teste";
-	//const char* arq_solucao = "teste.txt";
-	//const char* arq_res_obtidos = "resultados_obtidos.csv";
-
-	//optimize_cplex(modelo, instancia2, arq_solucao, arq_res_obtidos);
-
-	//imprimeArquivoNaoEuclideano(" ");
+	escreveCEPLEX(saida[instancia]);
+	//escreveCEPLEX(" ");
+	
+	const char* modelo = "Pequenas/Mauritania10n.lp";
+	const char* inst = "teste";
+	const char* arq_solucao = "teste.txt";
+	const char* arq_res_obtidos = "resultados_obtidos.csv";
+	optimize_cplex(modelo, inst, arq_solucao, arq_res_obtidos);
 
 	
-
-
-
+	//resolver_lp("Pequenas/Mauritania10n.lp", 3600.0);
+	//imprimeArquivoNaoEuclideano(" ");
 
 	return 0;
 }
@@ -149,114 +145,109 @@ void imprimeArquivoNaoEuclideano(const char* arq) {
 }
 
 void escreveCEPLEX(const char* arq) {
-	// A implementar
 	FILE* f;
 	if (!strcmp(arq, " ")) f = stdout;
 	else f = fopen(arq, "w");
-
+	
 	//FO -> 1ª Equação
 	fprintf(f, "Min \n");
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
 			for (int j = 0; j < num_cidades; j++) {
 				//trocando a ordem de D e F pra ficar igual no slide
-				if (c == 0 && i == 0 && j == 0) {
-					fprintf(f, "%d f_%d_%d_%d ", mat_distancia[c][i][j], c, i, j);
-				}
-				else {
+				if (i != j){
 					fprintf(f, "+ %d f_%d_%d_%d ", mat_distancia[c][i][j], c, i, j);
 				}
-				
 			}
 		}
 	}
-	fprintf(f, "+ ");
+	
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
 			for (int j = 0; j < num_cidades; j++) {
 				//entende-se y = gamma = taxa de retorno
-				if (c == 0 && i == 0 && j == 0) {
-					fprintf(f, "%d y_%d_%d_%d ", mat_retorno[c][i][j], c, i, j);
+				if (i != j) {
+					fprintf(f, "+ %3d y_%d_%d_%d ", mat_retorno[c][i][j], c, i, j);
 				}
-				else {
-					fprintf(f, "+ %d y_%d_%d_%d ", mat_retorno[c][i][j], c, i, j);
-				}
-
 			}
 		}
 	}
+	
 	//Subject To
-	fprintf(f, "\nST\n");
-
+	fprintf(f, "\nSubject To\n");
+	
 	//2ª Restrição
 	for (int i = 0; i < num_cidades; i++) {
 		for (int c = 0; c < num_carros; c++) {
 			for (int j = 0; j < num_cidades; j++) {
-				if (c == 0 && j == 0) {
-					fprintf(f, "f_%d_%d_%d ",c,i,j);
-				}
-				else {
+				if (i != j) {
 					fprintf(f, "+ f_%d_%d_%d ", c, i, j);
 				}
 			}
 		}
 		fprintf(f,"= 1\n");
 	}
-
+	
 	//3ª Restrição
 	for (int j = 0; j < num_cidades; j++) {
 		for (int c = 0; c < num_carros; c++) {
 			for (int i = 0; i < num_cidades; i++) {
-				if (c == 0 && i == 0) {
-					fprintf(f, "f_%d_%d_%d ", c, i, j);
-				}
-				else {
+				if (i != j){ 
 					fprintf(f, "+ f_%d_%d_%d ", c, i, j);
 				}
 			}
 		}
 		fprintf(f, "= 1\n");
 	}
-
+	
+	
 	//4ª Restrição
 	//linearizando e substituindo por 4.1, 4.2 e 4.3 (f c i j já é binária)
 	//4.1ª Restrição
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
-			fprintf(f, "a_%d_%d", c,i);
+			fprintf(f, "+ a_%d_%d", c,i);
 			for (int j = 0; j < num_cidades; j++) {
-				fprintf(f, " - f_%d_%d_%d", c, i, j);
+				if (i != j) {
+					fprintf(f, " - f_%d_%d_%d", c, i, j);
+				}
 			}
 			fprintf(f, " <= 0\n");
 		}
 	}
-
+	
 	//4.2ª Restrição
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
-			fprintf(f, "a_%d_%d", c, i);
+			fprintf(f, "+ a_%d_%d", c, i);
 			for (int x = 0; x < num_carros; x++) {
 				if (x != c) {
 					for (int h = 0; h < num_cidades; h++) {
-						fprintf(f, " - f_%d_%d_%d", x, h, i);
+						if (i != h) {
+							fprintf(f, " - f_%d_%d_%d", x, h, i);
+						}
 					}
 				}
 			}
 			fprintf(f, " <= 0\n");
 		}
 	}
-
+	
 	//4.3ª Restrição
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
-			fprintf(f, "a_%d_%d", c, i);
+			fprintf(f, "+ a_%d_%d", c, i);
 			for (int j = 0; j < num_cidades; j++) {
-				fprintf(f, " - f_%d_%d_%d", c, i, j);
+				if (i != j) {
+					fprintf(f, " - f_%d_%d_%d", c, i, j);
+				}
 			}
 			for (int x = 0; x < num_carros; x++) {
 				if (x != c) {
 					for (int h = 0; h < num_cidades; h++) {
+						if (i != h){
 						fprintf(f, " - f_%d_%d_%d", x, h, i);
+						}
 					}
 				}
 			}
@@ -269,9 +260,11 @@ void escreveCEPLEX(const char* arq) {
 	//5.1ª Restrição
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
-			fprintf(f, "e_%d_%d", c, i);
+			fprintf(f, "+ e_%d_%d", c, i);
 			for (int j = 0; j < num_cidades; j++) {
-				fprintf(f, " - f_%d_%d_%d", c, j, i);
+				if (i != j){
+					fprintf(f, " - f_%d_%d_%d", c, j, i);
+				}
 			}
 			fprintf(f, " <= 0\n");
 		}
@@ -280,11 +273,13 @@ void escreveCEPLEX(const char* arq) {
 	//5.2ª Restrição
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
-			fprintf(f, "e_%d_%d", c, i);
+			fprintf(f, "+ e_%d_%d", c, i);
 			for (int x = 0; x < num_carros; x++) {
 				if (x != c) {
 					for (int h = 0; h < num_cidades; h++) {
-						fprintf(f, " - f_%d_%d_%d", x, i, h);
+						if (i != h) {
+							fprintf(f, " - f_%d_%d_%d", x, i, h);
+						}
 					}
 				}
 			}
@@ -295,14 +290,18 @@ void escreveCEPLEX(const char* arq) {
 	//5.3ª Restrição
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
-			fprintf(f, "e_%d_%d", c, i);
+			fprintf(f, "+ e_%d_%d", c, i);
 			for (int j = 0; j < num_cidades; j++) {
-				fprintf(f, " - f_%d_%d_%d", c, j, i);
+				if (i != j) {
+					fprintf(f, " - f_%d_%d_%d", c, j, i);
+				}
 			}
 			for (int x = 0; x < num_carros; x++) {
 				if (x != c) {
 					for (int h = 0; h < num_cidades; h++) {
-						fprintf(f, " - f_%d_%d_%d", x, i, h);
+						if (h != i)  {
+							fprintf(f, " - f_%d_%d_%d", x, i, h);
+						}
 					}
 				}
 			}
@@ -317,7 +316,9 @@ void escreveCEPLEX(const char* arq) {
 		for (int i = 0; i < num_cidades; i++) {
 			//verificar a relação de j em w de acordo com o artigo
 			for (int j = 0; j < num_cidades; j++) {
-				fprintf(f, "w_%d_%d_%d - a_%d_%d <= 0\n", c, i, j, c, j);
+				if (i != j) {
+					fprintf(f, "+ w_%d_%d_%d - a_%d_%d <= 0\n", c, i, j, c, j);
+				}
 			}
 			
 		}
@@ -327,7 +328,9 @@ void escreveCEPLEX(const char* arq) {
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
 			for (int j = 0; j < num_cidades; j++) {
-				fprintf(f, "w_%d_%d_%d - e_%d_%d <= 0\n", c, i, j, c, i);
+				if (i != j) {
+					fprintf(f, "+ w_%d_%d_%d - e_%d_%d <= 0\n", c, i, j, c, i);
+				}
 			}
 		}
 	}
@@ -336,7 +339,9 @@ void escreveCEPLEX(const char* arq) {
 	for(int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
 			for (int j = 0; j < num_cidades; j++) {
-				fprintf(f, "w_%d_%d_%d - a_%d_%d - e_%d_%d >= -1\n", c, i, j, c, j, c, i);
+				if (i != j) {
+					fprintf(f, "+ w_%d_%d_%d - a_%d_%d - e_%d_%d >= -1\n", c, i, j, c, j, c, i);
+				}
 			}
 		}
 	}
@@ -344,47 +349,62 @@ void escreveCEPLEX(const char* arq) {
 	//7ª Restrição
 	for(int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
-			if (c == i && c == 0)	fprintf(f, "a_%d_%d",c,i);
-			else fprintf(f, " + a_%d_%d",c,i);
+			fprintf(f, "+ a_%d_%d ",c,i);
 		}
 	}
-	fprintf(f, " >= 1\n");
+	fprintf(f, ">= 1\n");
 	
 	//8ª Restrição sendo dividida em 8.1 e 8.2
 	//8.1ª Restrição
-	for (int i = 1; i < num_cidades; i++) fprintf(f, "u_%d >= 2\n", i);
+	//fprintf(f, "u_0 = 1\n");
+	for (int i = 1; i < num_cidades; i++) {
+		fprintf(f, "u_%d >= 2\n", i);
+	}
 
 	//8.2ª Restrição
-	for (int i = 1; i < num_cidades; i++) fprintf(f, "u_%d <= %d\n", i, num_cidades-1);
+	for (int i = 1; i < num_cidades; i++) {
+		fprintf(f, "u_%d <= %d\n", i, num_cidades - 1);
+	}
 
 	//9ª Restrição
 	//restrição maldita da desgaça
 	for (int i = 1; i < num_cidades; i++) {
 		for (int j = 1; j < num_cidades; j++) {
-			fprintf(f, "u_%d - u_%d + 1 - %d", i, j, num_cidades - 2);
-			for(int c = 0; c < num_carros; c++) {
-				fprintf(f, " + %d f_%d_%d_%d", num_cidades - 2, c, i, j);
+			if (i != j) {
+				fprintf(f, "u_%d - u_%d", i, j);
+				for (int c = 0; c < num_carros; c++) {
+					fprintf(f, " + %d f_%d_%d_%d", num_cidades - 2, c, i, j);
+				}
+				fprintf(f, " <= %d\n", num_cidades - 3);
 			}
-			fprintf(f, " <= 0\n");
 		}
 	}
-
+	
+	//teste da entrega somente em cidades impares (excluindo cidades pares)
+	//cidade 2 = indice 1
+	//cidade 4 = indice 3
+	for (int c = 0; c < num_carros; c++) {
+		for (int i = 0; i < num_cidades; i++) {
+			if (i % 2 != 0) { //cidade indice par
+				fprintf(f,"e_%d_%d = 0\n",c,i);
+			}
+		}
+	}
+	
 	//Antes da 10ª Restrição, declaro o bounds
 	fprintf(f, "Bounds\n");
+	//fprintf(f, "u_0 = 1\n");
 	for (int i = 1; i < num_cidades; i++) {
-		fprintf(f, "u_%d >= 1\n", i);
+		fprintf(f, "u_%d >= 2\n", i);
 	}
 	
 	//10ª Restrição
-	fprintf(f,"BIN\n");
+	fprintf(f,"Binary\n");
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
 			for (int j = 0; j < num_cidades; j++) {
-				if (j == 0) {
-					fprintf(f, "f_%d_%d_%d", c, i, j);
-				}
-				else {
-					fprintf(f, " f_%d_%d_%d", c, i, j);
+				if (i != j) {
+					fprintf(f, "f_%d_%d_%d ", c, i, j);
 				}
 			}
 		}
@@ -394,11 +414,8 @@ void escreveCEPLEX(const char* arq) {
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
 			for (int j = 0; j < num_cidades; j++) {
-				if (j == 0) {
-					fprintf(f, "w_%d_%d_%d", c, i, j);
-				}
-				else {
-					fprintf(f, " w_%d_%d_%d", c, i, j);
+				if (i != j) {
+					fprintf(f, "w_%d_%d_%d ", c, i, j);
 				}
 			}
 		}
@@ -407,7 +424,7 @@ void escreveCEPLEX(const char* arq) {
 	//suposição que no artigo está incorreto também
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
-			if (i == 0) {
+			if (c == 0 && i == 0) {
 				fprintf(f, "a_%d_%d", c, i);
 			}
 			else {
@@ -418,7 +435,7 @@ void escreveCEPLEX(const char* arq) {
 	fprintf(f, "\n");
 	for (int c = 0; c < num_carros; c++) {
 		for (int i = 0; i < num_cidades; i++) {
-			if (i == 0) {
+			if (c == 0 && i == 0) {
 				fprintf(f, "e_%d_%d", c, i);
 			}
 			else {
@@ -430,7 +447,7 @@ void escreveCEPLEX(const char* arq) {
 
 	//11ª Restrição
 	//Generals
-	fprintf(f, "Gen\n");
+	fprintf(f, "General\n");
 	for (int i = 1; i < num_cidades; i++) {
 		if (i == 1) {
 			fprintf(f, "u_%d", i);
@@ -442,10 +459,11 @@ void escreveCEPLEX(const char* arq) {
 	fprintf(f, "\n");
 
 	fprintf(f, "END");
-
+	
 	if (strcmp(arq, " "))
 		fclose(f);
 }
+
 
 void optimize_cplex(const char* modelo, const char* instancia, const char* arq_solucao, const char* arq_res_obtidos) {
 	int sts = 0;
@@ -462,36 +480,37 @@ void optimize_cplex(const char* modelo, const char* instancia, const char* arq_s
 	}
 
 	sts = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_ON);
-	check_status_cplex(env, sts, "CPXsetintparam(SCRIND)");
+	status_cplex(env, sts, "CPXsetintparam(SCRIND)");
 
-	sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600.0);
-	check_status_cplex(env, sts, "CPXsetdblparam(TILIM)");
+	//sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600.0);
+	sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 30.0);
+	status_cplex(env, sts, "CPXsetdblparam(TILIM)");
 
 	lp = CPXcreateprob(env, &sts, "meu_problema_lp");
-	check_status_cplex(env, sts, "CPXcreateprob");
+	status_cplex(env, sts, "CPXcreateprob");
 
 	sts = CPXreadcopyprob(env, lp, modelo, NULL);
-	check_status_cplex(env, sts, "CPXreadcopyprob");
+	status_cplex(env, sts, "CPXreadcopyprob");
 
 	sts = CPXgettime(env, &tempo_ini);
-	check_status_cplex(env, sts, "CPXgettime(start)");
+	status_cplex(env, sts, "CPXgettime(start)");
 
 	sts = CPXmipopt(env, lp);
-	check_status_cplex(env, sts, "CPXmipopt");
+	status_cplex(env, sts, "CPXmipopt");
 
 	sts = CPXgettime(env, &tempo_fim);
-	check_status_cplex(env, sts, "CPXgettime(end)");
+	status_cplex(env, sts, "CPXgettime(end)");
 
 	tempo = tempo_fim - tempo_ini;
 
 	sts = CPXgetobjval(env, lp, &sol);
-	check_status_cplex(env, sts, "CPXgetobjval");
+	status_cplex(env, sts, "CPXgetobjval");
 
 	sts = CPXgetbestobjval(env, lp, &lb);
-	check_status_cplex(env, sts, "CPXgetbestobjval");
+	status_cplex(env, sts, "CPXgetbestobjval");
 
 	sts = CPXgetmiprelgap(env, lp, &gap);
-	check_status_cplex(env, sts, "CPXgetmiprelgap");
+	status_cplex(env, sts, "CPXgetmiprelgap");
 
 	int num_vars = CPXgetnumcols(env, lp);
 
@@ -503,11 +522,11 @@ void optimize_cplex(const char* modelo, const char* instancia, const char* arq_s
 		char* names_buf = NULL;
 
 		sts = CPXgetmipx(env, lp, var_values, 0, num_vars - 1);
-		check_status_cplex(env, sts, "CPXgetmipx");
+		status_cplex(env, sts, "CPXgetmipx");
 
 		sts = CPXgetcolname(env, lp, NULL, NULL, 0, &surplus, 0, num_vars - 1);
 		if (sts != CPXERR_NEGATIVE_SURPLUS && sts != 0) {
-			check_status_cplex(env, sts, "CPXgetcolname (chamada 1)");
+			status_cplex(env, sts, "CPXgetcolname (chamada 1)");
 		}
 
 		names_buf_size = -surplus;
@@ -516,7 +535,7 @@ void optimize_cplex(const char* modelo, const char* instancia, const char* arq_s
 			names_buf = new char[names_buf_size];
 
 			sts = CPXgetcolname(env, lp, var_names, names_buf, names_buf_size, &surplus, 0, num_vars - 1);
-			check_status_cplex(env, sts, "CPXgetcolname (chamada 2)");
+			status_cplex(env, sts, "CPXgetcolname (chamada 2)");
 
 			//escrever_relatorio_solucao(arq_solucao, sol, num_vars, var_values, var_names);
 
@@ -535,7 +554,7 @@ void optimize_cplex(const char* modelo, const char* instancia, const char* arq_s
 	}
 }
 
-void check_status_cplex(CPXENVptr env, int sts, const char* function_name) {
+void status_cplex(CPXENVptr env, int sts, const char* function_name) {
 	if (sts) {
 		char error_string[CPXMESSAGEBUFSIZE];
 
