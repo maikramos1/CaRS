@@ -16,7 +16,7 @@ int main(void) {
 		"Medias/Peru13n.car",
 		//Grandes
 		"Grandes/Brasil16n.car",
-		"Grandes/	.car"
+		"Grandes/Russia17n.car"
 	};
 	const char* saida[] = {
 		//Instâncias Não-Euclideanas:
@@ -33,14 +33,14 @@ int main(void) {
 	//int instancia = 1;
 
 	
-	leArquivoNaoEuclideano("Pequenas/Mauritania10n.car");
+	leArquivoNaoEuclideano("Grandes/Brasil16n.car");
 	
-	escreveCEPLEX("Pequenas/Mauritania10n.lp");
+	escreveCEPLEX("Grandes/Brasil16n.lp");
 	//escreveCEPLEX(" ");
 	
-	const char* modelo = "Pequenas/Mauritania10n.lp";
-	const char* inst = "Mauritania10n";
-	const char* arq_solucao = "Mauritania10n.txt";
+	const char* modelo = "Grandes/Brasil16n.lp";
+	const char* inst = "Brasil16n";
+	const char* arq_solucao = "Brasil16n.txt";
 	const char* arq_res_obtidos = "resultados_obtidos.csv";
 	optimize_cplex(modelo, inst, arq_solucao, arq_res_obtidos);
 
@@ -484,8 +484,8 @@ void optimize_cplex(const char* modelo, const char* instancia, const char* arq_s
 	sts = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_ON);
 	status_cplex(env, sts, "CPXsetintparam(SCRIND)");
 
-	//sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600.0);
-	sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 30.0);
+	sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600.0);
+	//sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 30.0);
 	status_cplex(env, sts, "CPXsetdblparam(TILIM)");
 
 	lp = CPXcreateprob(env, &sts, "meu_problema_lp");
