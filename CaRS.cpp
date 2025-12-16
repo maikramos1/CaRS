@@ -539,8 +539,6 @@ void optimize_cplex(const char* modelo, const char* instancia, const char* arq_s
 			sts = CPXgetcolname(env, lp, var_names, names_buf, names_buf_size, &surplus, 0, num_vars - 1);
 			status_cplex(env, sts, "CPXgetcolname (chamada 2)");
 
-			//escrever_relatorio_solucao(arq_solucao, sol, num_vars, var_values, var_names);
-
 			FILE* f = fopen(arq_res_obtidos, "a");
 
 			fprintf(f, "%s;%.0f;%.0f;%.4f;%.4f;", instancia, lb, sol, gap, tempo);
