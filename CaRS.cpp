@@ -39,11 +39,16 @@ int main(void) {
 	//escreveCEPLEX(" ");
 	
 	const char* modelo = "Grandes/Brasil16n.lp";
-	const char* inst = "Brasil16n";
-	const char* arq_solucao = "Brasil16n.txt";
+	const char* inst = "Brasil16n-CPLEX";
+	//const char* arq_solucao = "solucao.txt";
+	
+	//char arq_solucao[256] = " ";
+	char arq_solucao[256];
+	snprintf(arq_solucao, sizeof(arq_solucao), "solucao-%s.txt", inst);
+
 	const char* arq_res_obtidos = "resultados_obtidos.csv";
 	optimize_cplex(modelo, inst, arq_solucao, arq_res_obtidos);
-
+	//optimize_gurobi(modelo, arq_solucao, arq_res_obtidos);
 	
 	//resolver_lp("Pequenas/Mauritania10n.lp", 3600.0);
 	//imprimeArquivoNaoEuclideano(" ");
@@ -484,8 +489,8 @@ void optimize_cplex(const char* modelo, const char* instancia, const char* arq_s
 	sts = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_ON);
 	status_cplex(env, sts, "CPXsetintparam(SCRIND)");
 
-	sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600.0);
-	//sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 30.0);
+	//sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 3600.0);
+	sts = CPXsetdblparam(env, CPX_PARAM_TILIM, 300.0);
 	status_cplex(env, sts, "CPXsetdblparam(TILIM)");
 
 	lp = CPXcreateprob(env, &sts, "meu_problema_lp");
@@ -539,6 +544,8 @@ void optimize_cplex(const char* modelo, const char* instancia, const char* arq_s
 			sts = CPXgetcolname(env, lp, var_names, names_buf, names_buf_size, &surplus, 0, num_vars - 1);
 			status_cplex(env, sts, "CPXgetcolname (chamada 2)");
 
+			escreve_solucao(arq_solucao, sol, num_vars, var_values, var_names);
+
 			FILE* f = fopen(arq_res_obtidos, "a");
 
 			fprintf(f, "%s;%.0f;%.0f;%.4f;%.4f;", instancia, lb, sol, gap, tempo);
@@ -572,29 +579,89 @@ void status_cplex(CPXENVptr env, int sts, const char* function_name) {
 //protótipo de escrita de solução
 void escreve_solucao(const char* arq_solucao, double valor_obj, int num_vars, double* var_values, char** var_names) {
 	FILE* f;
-	if (!strcmp(arq_solucao, " ")) f = stdout;
-	else f = fopen(arq_solucao, "w");
+	FILE* g;
+	f = stdout;
+	g = fopen(arq_solucao, "w");
 	
-	fprintf(f, "==============================\n");
+	
+	fprintf(f, "\n\n\n//------------------------------\n");
 	fprintf(f, "  SOLUCAO DO PROBLEMA CaRS\n");
-	fprintf(f, "==============================\n\n");
-	fprintf(f, "Valor da Funcao Objetivo: %.2f\n\n", valor_obj);
+	fprintf(f, "//------------------------------\n\n");
+	fprintf(g, "//------------------------------\n");
+	fprintf(g, "  SOLUCAO DO PROBLEMA CaRS\n");
+	fprintf(g, "//------------------------------\n\n");
+	//fprintf(f, "Valor da Funcao Objetivo: %.2f\n\n", valor_obj);
+	//fprintf(g, "Valor da Funcao Objetivo: %.2f\n\n", valor_obj);
+	
 
-	/* -------------------------------
-	   Arcos percorridos (f_c_i_j)
-	   ------------------------------- */
-	fprintf(f, "Arcos percorridos por carro:\n");
+	fprintf(f, "CaRS: ");
+	fprintf(g, "CaRS: ");
+	
+	int vet_carro[MAX_CID];
+	int vet_origem[MAX_CID];
+	int vet_destino[MAX_CID];
+	int count = 0;
 	for (int i = 0; i < num_vars; i++) {
 		if (var_values[i] > 0.5 && strncmp(var_names[i], "f_", 2) == 0) {
-			int c, u, v;
-			sscanf(var_names[i], "f_%d_%d_%d", &c, &u, &v);
-			fprintf(f, "  Carro %d: %d -> %d\n", c, u, v);
+			int carro, origem, destino;
+			sscanf(var_names[i], "f_%d_%d_%d", &carro, &origem, &destino);
+			//fprintf(f, "Carro %d: %d -> %d\n", carro, origem, destino);
+			//fprintf(g, "  Carro %d: %d -> %d\n", carro, origem, destino);
+			vet_carro[count] = carro;
+			vet_origem[count] = origem;
+			vet_destino[count] = destino;
+			count++;
 		}
 	}
+	int cidade_atual = 0;
+	count = 0;
+
+	while (count < num_cidades) {
+
+		int idx = -1;
+		for (int i = 0; i < num_cidades; i++) {          // ou i < qtd_arestas (melhor)
+			if (vet_origem[i] == cidade_atual) {
+				idx = i;
+				break;
+			}
+		}
+
+		if (idx == -1) {
+			fprintf(f, "[ERRO] Nao achei aresta saindo da cidade %d\n", cidade_atual);
+			fprintf(g, "[ERRO] Nao achei aresta saindo da cidade %d\n", cidade_atual);
+			break;
+		}
+
+		int destino = vet_destino[idx];
+		int carro = vet_carro[idx];
+
+		if (destino != 0) {
+			fprintf(f, "%d -[%d]-> ", cidade_atual, carro);
+			fprintf(g, "%d -[%d]-> ", cidade_atual, carro);
+		}
+		else {
+			fprintf(f, "%d -[%d]-> %d ", cidade_atual, carro, destino);
+			fprintf(g, "%d -[%d]-> %d ", cidade_atual, carro, destino);
+		}
+
+		cidade_atual = destino;
+		count++;
+
+		if (cidade_atual == 0) break;  // fechou o ciclo
+	}
+	
+	fprintf(f, "\n\n\n");
+
+		
+	
+
+
+	//----------------------------------------------------
+	// mais informações se precisar
 
 	/* -------------------------------
 	   Aluguel de carros (a_c_i)
-	   ------------------------------- */
+	   ------------------------------- 
 	fprintf(f, "\nCidades onde cada carro eh alugado:\n");
 	for (int i = 0; i < num_vars; i++) {
 		if (var_values[i] > 0.5 && strncmp(var_names[i], "a_", 2) == 0) {
@@ -603,10 +670,11 @@ void escreve_solucao(const char* arq_solucao, double valor_obj, int num_vars, do
 			fprintf(f, "  Carro %d alugado na cidade %d\n", c, city);
 		}
 	}
+	*/
 
 	/* -------------------------------
 	   Devolucao de carros (e_c_i)
-	   ------------------------------- */
+	   ------------------------------- 
 	fprintf(f, "\nCidades onde cada carro eh devolvido:\n");
 	for (int i = 0; i < num_vars; i++) {
 		if (var_values[i] > 0.5 && strncmp(var_names[i], "e_", 2) == 0) {
@@ -614,11 +682,11 @@ void escreve_solucao(const char* arq_solucao, double valor_obj, int num_vars, do
 			sscanf(var_names[i], "e_%d_%d", &c, &city);
 			fprintf(f, "  Carro %d devolvido na cidade %d\n", c, city);
 		}
-	}
-
+	}*/
+	
 	/* -------------------------------
 	   Pares aluguel–devolucao (w_c_i_j)
-	   ------------------------------- */
+	   ------------------------------- 
 	fprintf(f, "\nPares aluguel–devolucao:\n");
 	for (int i = 0; i < num_vars; i++) {
 		if (var_values[i] > 0.5 && strncmp(var_names[i], "w_", 2) == 0) {
@@ -629,10 +697,111 @@ void escreve_solucao(const char* arq_solucao, double valor_obj, int num_vars, do
 				c, aluguel, devolucao
 			);
 		}
+	}*/
+
+	//fprintf(f, "\n==============================\n");
+	//fprintf(g, "\n==============================\n");
+
+	
+	
+	fclose(g);
+}
+
+void optimize_gurobi(const char* modelo, const char* arq_solucao, const char* arq_res_obtidos) {
+	GRBenv* env = NULL;
+	GRBmodel* model = NULL;
+
+	int error = 0;
+	double sol = 0.0;
+	double lb, gap, tempo;
+
+	error = GRBloadenv(&env, "gurobi.log");
+	status_gurobi(env, error, "GRBloadenv");
+
+	error = GRBsetintparam(env, "OutputFlag", 1);
+	status_gurobi(env, error, "GRBsetintparam(OutputFlag)");
+
+	//error = GRBsetdblparam(env, "TimeLimit", 3600.0);
+	error = GRBsetdblparam(env, "TimeLimit", 30.0);
+	status_gurobi(env, error, "GRBsetdblparam(TimeLimit)");
+
+	error = GRBreadmodel(env, modelo, &model);
+	status_gurobi(env, error, "GRBreadmodel");
+
+	error = GRBoptimize(model);
+	status_gurobi(env, error, "GRBoptimize");
+
+	error = GRBgetdblattr(model, "ObjVal", &sol);
+	status_gurobi(env, error, "GRBgetdblattr(ObjVal)");
+
+	error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJBOUND, &lb);
+	status_gurobi(env, error, "GRBgetdblattr(ObjBound)");
+
+	error = GRBgetdblattr(model, GRB_DBL_ATTR_MIPGAP, &gap);
+	status_gurobi(env, error, "GRBgetdblattr(MIPGap)");
+
+	error = GRBgetdblattr(model, GRB_DBL_ATTR_RUNTIME, &tempo);
+	status_gurobi(env, error, "GRBgetdblattr(Runtime)");
+
+	int num_vars = 0;
+	double* var_values = NULL;
+	char** var_names = NULL;
+
+	error = GRBgetintattr(model, "NumVars", &num_vars);
+	status_gurobi(env, error, "GRBgetintattr(NumVars)");
+
+	if (num_vars > 0) {
+		var_values = new double[num_vars];
+		var_names = new char* [num_vars];
+		char* var_name_ptr = NULL;
+
+		error = GRBgetdblattrarray(model, "X", 0, num_vars, var_values);
+		status_gurobi(env, error, "GRBgetdblattrarray(X)");
+
+		for (int i = 0; i < num_vars; i++) {
+			error = GRBgetstrattrelement(model, "VarName", i, &var_name_ptr);
+			status_gurobi(env, error, "GRBgetstrattrelement(VarName)");
+
+			var_names[i] = new char[strlen(var_name_ptr) + 1];
+			strcpy(var_names[i], var_name_ptr);
+		}
+
+		escreve_solucao(arq_solucao, sol, num_vars, var_values, var_names);
+
+		FILE* f = fopen(arq_res_obtidos, "a");
+
+		fprintf(f, "%.0f;%.0f;%.4f;%.4f\n", lb, sol, gap, tempo);
+
+		fclose(f);
+
+		for (int i = 0; i < num_vars; i++) {
+			delete[] var_names[i];
+		}
+		delete[] var_names;
+		delete[] var_values;
+	}
+	else {
+		printf("Advertencia: Nenhuma variavel encontrada no modelo Gurobi.\n");
 	}
 
-	fprintf(f, "\n==============================\n");
+	if (model != NULL) {
+		GRBfreemodel(model);
+	}
 
-	if (strcmp(arq_solucao, " "))
-		fclose(f);
+	if (env != NULL) {
+		GRBfreeenv(env);
+	}
+}
+void status_gurobi(GRBenv* env, int error, const char* function_name) {
+	if (error) {
+		// Se houver um erro, pega a mensagem de erro do Gurobi
+		fprintf(stderr, "ERRO DO GUROBI na funcao %s: %s (code %d)\n", function_name, GRBgeterrormsg(env), error);
+
+		// Limpa o ambiente se ele foi criado
+		if (env) {
+			GRBfreeenv(env);
+		}
+		// Encerra o programa em caso de erro
+		exit(1);
+	}
 }
